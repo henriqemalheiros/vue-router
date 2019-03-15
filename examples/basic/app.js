@@ -7,7 +7,29 @@ import VueRouter from 'vue-router'
 Vue.use(VueRouter)
 
 // 2. Define route components
-const Home = { template: '<div>home</div>' }
+const Home = {
+  template: '<div>home</div>',
+  beforeRouteEnter (to, from, next) {
+    console.log('beforeRouteEnter: home')
+
+    next(vm => {
+      console.log('beforeRouteEnterNext: home')
+    })
+  },
+  beforeCreate () {
+    console.log('beforeCreate: home')
+  },
+  created () {
+    console.log('created: home')
+  },
+  beforeMount () {
+    console.log('beforeMount: home')
+  },
+  mounted () {
+    console.log('mounted: home')
+  }
+}
+
 const Foo = { template: '<div>foo</div>' }
 const Bar = { template: '<div>bar</div>' }
 const Unicode = { template: '<div>unicode</div>' }

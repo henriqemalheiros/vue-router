@@ -35,6 +35,7 @@ export class History {
     this.base = normalizeBase(base)
     // start with a route object that stands for "nowhere"
     this.current = START
+    this.future = null
     this.pending = null
     this.ready = false
     this.readyCbs = []
@@ -64,15 +65,17 @@ export class History {
   transitionTo (location: RawLocation, onComplete?: Function, onAbort?: Function) {
     const route = this.router.match(location, this.current)
     this.confirmTransition(route, () => {
-      this.updateRoute(route)
-      onComplete && onComplete(route)
-      this.ensureURL()
+      return this.updateRoute(route)
+        .then(() => {
+          onComplete && onComplete(route)
+          this.ensureURL()
 
-      // fire ready cbs once
-      if (!this.ready) {
-        this.ready = true
-        this.readyCbs.forEach(cb => { cb(route) })
-      }
+          // fire ready cbs once
+          if (!this.ready) {
+            this.ready = true
+            this.readyCbs.forEach(cb => { cb(route) })
+          }
+        })
     }, err => {
       if (onAbort) {
         onAbort(err)
@@ -173,22 +176,32 @@ export class History {
         }
         this.pending = null
         onComplete(route)
-        if (this.router.app) {
-          this.router.app.$nextTick(() => {
-            postEnterCbs.forEach(cb => { cb() })
+          .then(() => {
+            if (this.router.app) {
+              this.router.app.$nextTick(() => {
+                postEnterCbs.forEach(cb => { cb() })
+              })
+            }
           })
-        }
       })
     })
   }
 
   updateRoute (route: Route) {
-    const prev = this.current
-    this.current = route
-    this.cb && this.cb(route)
-    this.router.afterHooks.forEach(hook => {
-      hook && hook(route, prev)
-    })
+    this.future = route
+    this.cb && this.cb(this.current, this.future)
+
+    return new Promise(resolve => setTimeout(() => {
+      const prev = this.current
+      this.current = route
+      this.future = null
+      this.cb && this.cb(route, null)
+      this.router.afterHooks.forEach(hook => {
+        hook && hook(route, prev)
+      })
+
+      resolve()
+    }, 1000))
   }
 }
 

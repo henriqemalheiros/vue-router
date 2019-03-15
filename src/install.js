@@ -25,6 +25,7 @@ export function install (Vue) {
         this._router = this.$options.router
         this._router.init(this)
         Vue.util.defineReactive(this, '_route', this._router.history.current)
+        Vue.util.defineReactive(this, '_futureRoute', this._router.history.future)
       } else {
         this._routerRoot = (this.$parent && this.$parent._routerRoot) || this
       }
@@ -41,6 +42,10 @@ export function install (Vue) {
 
   Object.defineProperty(Vue.prototype, '$route', {
     get () { return this._routerRoot._route }
+  })
+
+  Object.defineProperty(Vue.prototype, '$futureRoute', {
+    get () { return this._routerRoot._futureRoute }
   })
 
   Vue.component('RouterView', View)

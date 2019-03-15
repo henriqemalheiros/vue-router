@@ -19,6 +19,7 @@ export default {
     const h = parent.$createElement
     const name = props.name
     const route = parent.$route
+    const futureRoute = parent.$futureRoute
     const cache = parent._routerViewCache || (parent._routerViewCache = {})
 
     // determine current view depth, also check to see if the tree
@@ -42,6 +43,7 @@ export default {
     }
 
     const matched = route.matched[depth]
+    const futureMatched = futureRoute ? futureRoute.matched[depth] : null
     // render empty node if no matched route
     if (!matched) {
       cache[name] = null
@@ -49,6 +51,7 @@ export default {
     }
 
     const component = cache[name] = matched.components[name]
+    const futureComponent = futureMatched ? futureMatched.components[name] : null
 
     // attach instance registration hook
     // this will be called in the instance's injected lifecycle hooks
@@ -84,7 +87,10 @@ export default {
       }
     }
 
-    return h(component, data, children)
+    return h('div', {}, [
+      h(component, data, children),
+      h(futureComponent, { style: { display: 'none' }}, [])
+    ])
   }
 }
 

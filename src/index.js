@@ -111,9 +111,10 @@ export default class VueRouter {
       )
     }
 
-    history.listen(route => {
+    history.listen((route, futureRoute) => {
       this.apps.forEach((app) => {
         app._route = route
+        app._futureRoute = futureRoute
       })
     })
   }
